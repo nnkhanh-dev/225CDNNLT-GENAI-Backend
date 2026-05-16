@@ -38,6 +38,8 @@ services:
   generate3dmodelservice:
     build:
       context: ./Generate3DModelService
+    volumes:
+      - ../ModelsData:/app/models
     networks:
       - optionnet
     healthcheck:
@@ -55,6 +57,8 @@ services:
       - optionservice
       - generatepromptservice
       - generate3dmodelservice
+    volumes:
+      - ../ModelsData:/usr/share/nginx/html/models
     networks:
       - optionnet
     healthcheck:
