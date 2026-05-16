@@ -1,3 +1,4 @@
+import logging
 from fastapi import FastAPI, Depends, HTTPException
 from typing import List
 from sqlalchemy.orm import Session
@@ -17,6 +18,9 @@ from schemas import (
 	ObjectCreate, ObjectRead, StyleCreate, StyleRead,
 )
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 app = FastAPI(title="OptionService")
 
 
@@ -25,7 +29,53 @@ def health():
 	return {"status": "ok", "service": "OptionService"}
 
 
+# Create tables
 Base.metadata.create_all(bind=engine)
+
+
+# Default seed data
+DEFAULT_OBJECTS = ['Sofa', 'Chair', 'Table', 'Bed', 'Bookshelf', 'Cabinet', 'Lamp', 'Plant Pot']
+DEFAULT_STYLES = [
+	{"name": "Modern", "prompt": "modern style, clean lines, contemporary design"},
+	{"name": "Classic", "prompt": "classic style, ornate details, traditional elegance"},
+	{"name": "Minimalist", "prompt": "minimalist style, simple form, less is more"},
+	{"name": "Industrial", "prompt": "industrial style, raw materials, metal and wood"},
+	{"name": "Scandinavian", "prompt": "scandinavian style, light wood, cozy and functional"},
+	{"name": "Vintage", "prompt": "vintage style, retro charm, antique finish"},
+]
+
+
+@app.on_event("startup")
+def seed_database():
+	"""Seed database with default objects and styles if empty."""
+	db = SessionLocal()
+	try:
+		# Seed objects
+		existing_objects = db.query(object_model.Object).count()
+		if existing_objects == 0:
+			logger.info("Seeding default objects...")
+			for name in DEFAULT_OBJECTS:
+				obj = object_model.Object(name=name)
+				db.add(obj)
+			db.commit()
+			logger.info(f"Seeded {len(DEFAULT_OBJECTS)} objects.")
+
+		# Seed styles
+		existing_styles = db.query(style_model.Style).count()
+		if existing_styles == 0:
+			logger.info("Seeding default styles...")
+			for s in DEFAULT_STYLES:
+				style = style_model.Style(name=s["name"], prompt=s["prompt"])
+				db.add(style)
+			db.commit()
+			logger.info(f"Seeded {len(DEFAULT_STYLES)} styles.")
+
+		logger.info(f"Database ready: {db.query(object_model.Object).count()} objects, {db.query(style_model.Style).count()} styles")
+	except Exception as e:
+		logger.error(f"Error seeding database: {e}")
+		db.rollback()
+	finally:
+		db.close()
 
 
 def get_db():
@@ -35,6 +85,8 @@ def get_db():
 	finally:
 		db.close()
 
+
+# ─── Object CRUD ───
 
 @app.post("/objects", response_model=ObjectRead)
 def create_object_endpoint(obj_in: ObjectCreate, db: Session = Depends(get_db)):
@@ -72,6 +124,8 @@ def delete_object_endpoint(id: int, db: Session = Depends(get_db)):
 		raise HTTPException(status_code=404, detail="Not found")
 	return obj
 
+
+# ─── Style CRUD ───
 
 @app.post("/styles", response_model=StyleRead)
 def create_style_endpoint(style_in: StyleCreate, db: Session = Depends(get_db)):
