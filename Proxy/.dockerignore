@@ -1,0 +1,11 @@
+# Exclude VCS
+.git
+.gitignore
+
+# Local editor
+.vscode
+.idea
+
+# Misc
+*.log
+Dockerfile

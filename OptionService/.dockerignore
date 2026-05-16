@@ -1,0 +1,31 @@
+# Exclude VCS
+.git
+.gitignore
+
+# Python cache
+__pycache__
+*.pyc
+*.pyo
+
+# Env files
+.env
+.env.*
+
+# Virtual envs
+venv
+env
+
+# Local editor directories
+.vscode
+.idea
+
+# Build / packaging
+build
+dist
+*.egg-info
+
+# Misc
+*.log
+*.sqlite3
+*.db
+Dockerfile

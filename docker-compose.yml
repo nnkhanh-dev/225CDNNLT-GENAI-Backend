@@ -1,0 +1,71 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:15
+    restart: always
+    env_file:
+      - ./.env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-optionsdb}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - optionnet
+
+  optionservice:
+    build:
+      context: ./OptionService
+    env_file:
+      - ./OptionService/src/.env
+    depends_on:
+      - postgres
+    networks:
+      - optionnet
+
+  generatepromptservice:
+    build:
+      context: ./GeneratePromptService
+    networks:
+      - optionnet
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8001/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  generate3dmodelservice:
+    build:
+      context: ./Generate3DModelService
+    networks:
+      - optionnet
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  proxy:
+    build:
+      context: ./Proxy
+    ports:
+      - "80:80"
+    depends_on:
+      - optionservice
+      - generatepromptservice
+      - generate3dmodelservice
+    networks:
+      - optionnet
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  postgres_data:
+
+networks:
+  optionnet:
+    driver: bridge
