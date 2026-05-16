@@ -50,7 +50,7 @@ services:
     build:
       context: ./Proxy
     ports:
-      - "80:80"
+      - "8888:80"
     depends_on:
       - optionservice
       - generatepromptservice

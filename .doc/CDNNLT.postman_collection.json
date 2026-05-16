@@ -1,0 +1,233 @@
+{
+  "info": {
+    "name": "CDNNLT",
+    "_postman_id": "b1a9f2b4-0000-4000-8000-000000000000",
+    "description": "Postman collection for CDNNLT services (proxy at http://localhost)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "GeneratePromptService - Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/prompt/health",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "prompt",
+            "health"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Generate3DModelService - Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/model/health",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "model",
+            "health"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Generate3DModelService - Generate",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"object\": \"chair\",\n  \"style\": \"modern\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/model/generate",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "model",
+            "generate"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Generate3DModelService - Generate Custom Prompt",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"description\": \"A cozy wooden armchair with soft cushions\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/model/generate_custom",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "model",
+            "generate_custom"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Generate3DModelService - Generate From Image (file)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "src": "path/to/image.jpg"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/model/generate_from_image",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "model",
+            "generate_from_image"
+          ]
+        }
+      }
+    },
+    {
+      "name": "OptionService - Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/option/health",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "option",
+            "health"
+          ]
+        }
+      }
+    },
+    {
+      "name": "OptionService - Create Object",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"chair\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/option/objects",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "option",
+            "objects"
+          ]
+        }
+      }
+    },
+    {
+      "name": "OptionService - List Objects",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/option/objects",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "option",
+            "objects"
+          ]
+        }
+      }
+    },
+    {
+      "name": "OptionService - Create Style",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"modern\",\n  \"prompt\": \"A modern minimalist chair with clean lines\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/option/styles",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "option",
+            "styles"
+          ]
+        }
+      }
+    },
+    {
+      "name": "OptionService - List Styles",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/option/styles",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "option",
+            "styles"
+          ]
+        }
+      }
+    }
+  ]
+}
