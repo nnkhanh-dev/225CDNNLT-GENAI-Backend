@@ -4,8 +4,9 @@ from fastapi import FastAPI, UploadFile, File
 from PIL import Image
 
 from schemas import GenerateRequest, CustomPromptRequest
-from services.vision_service import get_image_description, get_room_description
+from services.vision_service import validate_object_image, validate_room_image
 from services.trellis_service import call_trellis_api
+from services.tripo_service import call_tripo_image_to_3d
 
 app = FastAPI(title="GenAI Nội Thất 3D API")
 
@@ -28,54 +29,33 @@ def generate_custom_prompt(request: CustomPromptRequest):
 
 @app.post("/generate_from_image")
 async def generate_from_image(file: UploadFile = File(...)):
-    """Generate a 3D model from an uploaded image by first asking the Vision model
-    to describe the image, then feeding that description to Trellis.
+    """
+    Tạo 3D Model Đồ Vật trực tiếp từ File Ảnh sử dụng Tripo3D.
+    Sử dụng Vision LLM để kiểm tra ảnh, sau đó dùng prompt cứng để điều hướng Tripo3D tập trung tạo đúng đồ vật, bỏ qua background.
     """
     try:
         contents = await file.read()
         image = Image.open(io.BytesIO(contents))
 
-        image.thumbnail((800, 800))
-        if image.mode in ("RGBA", "P"):
+        fmt = "png" if image.format == "PNG" else "jpeg"
+        if image.mode in ("RGBA", "P") and fmt != "png":
             image = image.convert("RGB")
 
         buffer = io.BytesIO()
-        image.save(buffer, format="JPEG", quality=80)
-        base64_image = base64.b64encode(buffer.getvalue()).decode('utf-8')
+        image.save(buffer, format=fmt.upper(), quality=80 if fmt == "jpeg" else None)
+        img_bytes = buffer.getvalue()
 
-        description = get_image_description(base64_image, "image/jpeg")
-        return call_trellis_api({"prompt": description})
-
-    except Exception as e:
-        return {"success": "false", "error": f"Image processing error: {str(e)}"}
-
-
-@app.post("/generate_room_from_image")
-async def generate_room_from_image(file: UploadFile = File(...)):
-    """Generate a 3D model of a room from an uploaded image."""
-    try:
-        contents = await file.read()
-        image = Image.open(io.BytesIO(contents))
-
-        image.thumbnail((800, 800))
-        if image.mode in ("RGBA", "P"):
-            image = image.convert("RGB")
-
-        buffer = io.BytesIO()
-        image.save(buffer, format="JPEG", quality=80)
-        base64_image = base64.b64encode(buffer.getvalue()).decode('utf-8')
-
-        description = get_room_description(base64_image, "image/jpeg")
+        base64_image = base64.b64encode(img_bytes).decode('utf-8')
+        is_valid = validate_object_image(base64_image, f"image/{fmt}")
         
-        desc_upper = description.strip().upper()
-        if "FALSE" in desc_upper or "NOT DEPICT" in desc_upper or "NOT A ROOM" in desc_upper:
-            return {"success": "false", "error": "Ảnh cung cấp không phải là một căn phòng."}
+        if not is_valid:
+            return {"success": "false", "error": "Ảnh cung cấp không hợp lệ hoặc không có đồ nội thất/vật thể rõ ràng để tạo 3D."}
 
-        return call_trellis_api({"prompt": description})
+        hardcoded_prompt = "A standalone 3D model of this furniture/object. Completely ignore any background or environment. Ensure it is fully generated in full 360 degrees on all sides."
+        return call_tripo_image_to_3d(img_bytes, option_prompt=hardcoded_prompt, ext=fmt)
 
     except Exception as e:
-        return {"success": "false", "error": f"Image processing error: {str(e)}"}
-
+        return {"success": "false", "error": f"Tripo3D processing error: {str(e)}"}
 
 if __name__ == "__main__":
     import uvicorn
