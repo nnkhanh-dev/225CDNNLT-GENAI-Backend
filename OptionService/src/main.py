@@ -7,15 +7,18 @@ from config.database import SessionLocal, engine
 from app.models.base import Base
 
 import models.object as object_model
+import models.document as document_model
 import models.style as style_model
 
 from services import (
 	create_object, get_object, get_objects, update_object, delete_object,
+	create_document, get_document, get_documents, update_document, delete_document, reindex_document,
 	create_style, get_style, get_styles, update_style, delete_style,
 )
 
 from schemas import (
 	ObjectCreate, ObjectRead, StyleCreate, StyleRead,
+	DocumentCreate, DocumentRead, DocumentUpdate, DocumentReindexResponse,
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -70,7 +73,8 @@ def seed_database():
 			db.commit()
 			logger.info(f"Seeded {len(DEFAULT_STYLES)} styles.")
 
-		logger.info(f"Database ready: {db.query(object_model.Object).count()} objects, {db.query(style_model.Style).count()} styles")
+		# Ensure documents table exists and document count is visible
+		logger.info(f"Database ready: {db.query(object_model.Object).count()} objects, {db.query(style_model.Style).count()} styles, {db.query(document_model.Document).count()} documents")
 	except Exception as e:
 		logger.error(f"Error seeding database: {e}")
 		db.rollback()
@@ -162,4 +166,56 @@ def delete_style_endpoint(id: int, db: Session = Depends(get_db)):
 	if not style:
 		raise HTTPException(status_code=404, detail="Not found")
 	return style
+
+
+# ─── Document CRUD ───
+
+@app.post("/documents", response_model=DocumentRead)
+def create_document_endpoint(document_in: DocumentCreate, db: Session = Depends(get_db)):
+	existing = db.query(document_model.Document).filter(document_model.Document.name == document_in.name).first()
+	if existing:
+		raise HTTPException(status_code=400, detail="Document with this name already exists")
+
+	existing_document_id = db.query(document_model.Document).filter(document_model.Document.document_id == document_in.document_id).first()
+	if existing_document_id:
+		raise HTTPException(status_code=400, detail="Document with this document_id already exists")
+
+	return create_document(db, document_in)
+
+
+@app.get("/documents", response_model=List[DocumentRead])
+def list_documents(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+	return get_documents(db, skip, limit)
+
+
+@app.get("/documents/{id}", response_model=DocumentRead)
+def get_document_endpoint(id: int, db: Session = Depends(get_db)):
+	document = get_document(db, id)
+	if not document:
+		raise HTTPException(status_code=404, detail="Not found")
+	return document
+
+
+@app.put("/documents/{id}", response_model=DocumentRead)
+def update_document_endpoint(id: int, document_in: DocumentUpdate, db: Session = Depends(get_db)):
+	document = update_document(db, id, document_in)
+	if not document:
+		raise HTTPException(status_code=404, detail="Not found")
+	return document
+
+
+@app.delete("/documents/{id}", response_model=DocumentRead)
+def delete_document_endpoint(id: int, db: Session = Depends(get_db)):
+	document = delete_document(db, id)
+	if not document:
+		raise HTTPException(status_code=404, detail="Not found")
+	return document
+
+
+@app.post("/documents/{id}/reindex", response_model=DocumentReindexResponse)
+def reindex_document_endpoint(id: int, db: Session = Depends(get_db)):
+	result = reindex_document(db, id)
+	if not result:
+		raise HTTPException(status_code=404, detail="Not found")
+	return DocumentReindexResponse(success=result.get("success", True), total_chunks=result.get("total_chunks", 0))
 

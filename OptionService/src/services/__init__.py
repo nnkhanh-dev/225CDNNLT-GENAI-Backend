@@ -1,3 +1,11 @@
+from .document_service import (
+    create_document,
+    get_document,
+    get_documents,
+    update_document,
+    delete_document,
+    reindex_document,
+)
 from .object_service import (
     create_object,
     get_object,
@@ -19,6 +27,12 @@ __all__ = [
     "get_objects",
     "update_object",
     "delete_object",
+    "create_document",
+    "get_document",
+    "get_documents",
+    "update_document",
+    "delete_document",
+    "reindex_document",
     "create_style",
     "get_style",
     "get_styles",

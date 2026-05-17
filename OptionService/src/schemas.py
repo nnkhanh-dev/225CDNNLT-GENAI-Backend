@@ -31,3 +31,30 @@ class StyleRead(StyleBase):
 
     class Config:
         orm_mode = True
+
+
+class DocumentBase(BaseModel):
+    name: str
+    style: str
+    document_path: str
+    document_id: str
+
+
+class DocumentCreate(DocumentBase):
+    pass
+
+
+class DocumentUpdate(DocumentBase):
+    pass
+
+
+class DocumentRead(DocumentBase):
+    id: int
+
+    class Config:
+        orm_mode = True
+
+
+class DocumentReindexResponse(BaseModel):
+    success: bool
+    total_chunks: int

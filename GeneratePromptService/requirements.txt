@@ -1,2 +1,10 @@
-fastapi>=0.95.0
-uvicorn[standard]>=0.22.0
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+pydantic>=2.7,<3
+python-dotenv>=1.0.1
+chromadb>=0.5.5
+langchain>=0.2.14
+langchain-community>=0.2.12
+langchain-google-genai>=1.0.8
+langchain-text-splitters>=0.2.3
+pypdf>=4.3.1
