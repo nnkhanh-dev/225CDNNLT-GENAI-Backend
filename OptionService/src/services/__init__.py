@@ -20,6 +20,7 @@ from .style_service import (
     get_styles,
     update_style,
     delete_style,
+    generate_prompt,
 )
 
 __all__ = [
@@ -40,4 +41,5 @@ __all__ = [
     "get_styles",
     "update_style",
     "delete_style",
+    "generate_prompt",
 ]

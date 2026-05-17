@@ -13,7 +13,7 @@ import models.style as style_model
 from services import (
 	create_object, get_object, get_objects, update_object, delete_object,
 	create_document, get_document, get_documents, update_document, delete_document, reindex_document, upload_file,
-	create_style, get_style, get_styles, update_style, delete_style,
+	create_style, get_style, get_styles, update_style, delete_style, generate_prompt,
 )
 
 from schemas import (
@@ -166,6 +166,14 @@ def delete_style_endpoint(id: int, db: Session = Depends(get_db)):
 	if not style:
 		raise HTTPException(status_code=404, detail="Not found")
 	return style
+
+
+@app.post("/styles/{id}/generate-prompt")
+def generate_style_prompt_endpoint(id: int, db: Session = Depends(get_db)):
+    result = generate_prompt(db, id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Style not found or generate failed")
+    return result
 
 
 # ─── Document CRUD ───
