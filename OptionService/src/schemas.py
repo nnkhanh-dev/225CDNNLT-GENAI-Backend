@@ -1,5 +1,4 @@
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, ConfigDict
 
 
 class ObjectBase(BaseModel):
@@ -11,10 +10,9 @@ class ObjectCreate(ObjectBase):
 
 
 class ObjectRead(ObjectBase):
-    id: int
+    model_config = ConfigDict(from_attributes=True)
 
-    class Config:
-        orm_mode = True
+    id: int
 
 
 class StyleBase(BaseModel):
@@ -27,10 +25,9 @@ class StyleCreate(StyleBase):
 
 
 class StyleRead(StyleBase):
-    id: int
+    model_config = ConfigDict(from_attributes=True)
 
-    class Config:
-        orm_mode = True
+    id: int
 
 
 class DocumentBase(BaseModel):
@@ -49,10 +46,9 @@ class DocumentUpdate(DocumentBase):
 
 
 class DocumentRead(DocumentBase):
-    id: int
+    model_config = ConfigDict(from_attributes=True)
 
-    class Config:
-        orm_mode = True
+    id: int
 
 
 class DocumentReindexResponse(BaseModel):

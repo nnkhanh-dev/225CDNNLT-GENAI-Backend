@@ -4,7 +4,7 @@ from fastapi import FastAPI, UploadFile, File
 from PIL import Image
 
 from schemas import GenerateRequest, CustomPromptRequest
-from services.vision_service import validate_object_image, validate_room_image
+from services.vision_service import validate_object_image
 from services.trellis_service import call_trellis_api
 from services.tripo_service import call_tripo_image_to_3d
 

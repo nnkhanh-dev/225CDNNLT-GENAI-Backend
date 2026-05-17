@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   postgres:
     image: postgres:15
@@ -17,8 +16,6 @@ services:
   optionservice:
     build:
       context: ./OptionService
-    env_file:
-      - ./OptionService/src/.env
     depends_on:
       - postgres
     networks:
@@ -27,6 +24,8 @@ services:
   generatepromptservice:
     build:
       context: ./GeneratePromptService
+    env_file:
+      - ./GeneratePromptService/src/.env
     networks:
       - optionnet
     healthcheck:
@@ -38,6 +37,8 @@ services:
   generate3dmodelservice:
     build:
       context: ./Generate3DModelService
+    env_file:
+      - ./Generate3DModelService/src/.env
     volumes:
       - ../ModelsData:/app/models
     networks:
