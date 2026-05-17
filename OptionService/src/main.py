@@ -170,10 +170,15 @@ def delete_style_endpoint(id: int, db: Session = Depends(get_db)):
 
 @app.post("/styles/{id}/generate-prompt")
 def generate_style_prompt_endpoint(id: int, db: Session = Depends(get_db)):
-    result = generate_prompt(db, id)
-    if not result:
-        raise HTTPException(status_code=404, detail="Style not found or generate failed")
-    return result
+	try:
+		result = generate_prompt(db, id)
+	except HTTPException:
+		raise
+	except Exception as e:
+		raise HTTPException(status_code=502, detail=f"Generate prompt failed: {str(e)}")
+	if not result:
+		raise HTTPException(status_code=404, detail="Style not found or generate failed")
+	return result
 
 
 # ─── Document CRUD ───

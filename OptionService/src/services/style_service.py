@@ -4,6 +4,7 @@ from schemas import StyleCreate
 import os
 import requests
 from typing import Dict
+from fastapi import HTTPException
 
 
 def create_style(db: Session, style_in: StyleCreate):
@@ -52,8 +53,13 @@ def generate_prompt(db: Session, id: int) -> Dict[str, str]:
     if not style:
         return None
 
-    resp = requests.post(f"{_generate_prompt_service_url()}/generate-prompt", json={"style": style.name}, timeout=30)
-    resp.raise_for_status()
+    resp = requests.post(f"{_generate_prompt_service_url()}/generate-prompt", json={"style": style.name}, timeout=180)
+    if not resp.ok:
+        try:
+            detail = resp.json().get("detail", resp.text)
+        except Exception:
+            detail = resp.text
+        raise HTTPException(status_code=resp.status_code, detail=detail)
     data = resp.json()
 
     prompt = data.get("prompt")

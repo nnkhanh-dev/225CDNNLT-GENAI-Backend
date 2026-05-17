@@ -15,7 +15,7 @@ def get_llm() -> ChatGoogleGenerativeAI:
 		raise RuntimeError("Missing GOOGLE_API_KEY for Gemini chat model")
 
 	return ChatGoogleGenerativeAI(
-		model=os.getenv("GEMINI_CHAT_MODEL", "gemini-1.5-flash"),
+		model=os.getenv("GEMINI_CHAT_MODEL", "gemini-2.0-flash"),
 		google_api_key=api_key,
 		temperature=0.3,
 	)
