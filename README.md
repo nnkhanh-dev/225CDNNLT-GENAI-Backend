@@ -26,6 +26,13 @@ VISION_INVOKE_URL = "https://integrate.api.nvidia.com/v1/chat/completions"</pre>
 <pre>
 DATABASE_URL=postgresql+psycopg2://postgres:change_this_password@postgres:5432/optionsdb
 </pre>
+- Generate prompt service
+<pre>
+GOOGLE_API_KEY=""
+GEMINI_CHAT_MODEL="gemini-1.5-flash"
+GEMINI_EMBEDDING_MODEL="models/text-embedding-004"
+CHROMA_PERSIST_DIRECTORY="/app/chroma_db"
+</pre>
 - Global
 <pre>
 POSTGRES_USER=postgres
