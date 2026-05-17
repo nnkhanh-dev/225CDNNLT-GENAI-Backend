@@ -12,14 +12,23 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - optionnet
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d optionsdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   optionservice:
     build:
       context: ./OptionService
+    restart: always
+    env_file:
+      - ./OptionService/src/.env
     volumes:
       - ../UploadedDocuments:/app/uploads
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - optionnet
 

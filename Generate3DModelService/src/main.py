@@ -8,7 +8,7 @@ from services.vision_service import validate_object_image
 from services.trellis_service import call_trellis_api
 from services.tripo_service import call_tripo_image_to_3d, call_tripo_text_to_3d
 
-app = FastAPI(title="GenAI Nội Thất 3D API")
+app = FastAPI(title="GenAI Nội Thất 3D API", root_path="/model")
 
 
 @app.get("/health")

@@ -24,7 +24,7 @@ from schemas import (
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="OptionService")
+app = FastAPI(title="OptionService", root_path="/option")
 
 
 @app.get("/health")

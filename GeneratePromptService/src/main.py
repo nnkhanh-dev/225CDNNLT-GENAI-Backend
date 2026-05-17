@@ -5,7 +5,7 @@ from modules.generate_prompt.router import router as generate_prompt_router
 from modules.manage_document.router import router as manage_document_router
 
 
-app = FastAPI(title="GeneratePromptService")
+app = FastAPI(title="GeneratePromptService", root_path="/prompt")
 app.include_router(generate_prompt_router)
 app.include_router(manage_document_router)
 
