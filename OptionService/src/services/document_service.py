@@ -1,5 +1,6 @@
 import os
 from typing import Any, Dict
+from pathlib import Path
 
 import requests
 from sqlalchemy.orm import Session
@@ -24,7 +25,7 @@ def _index_document(document: Document) -> Dict[str, Any]:
 		{
 			"style": document.style,
 			"document-path": document.document_path,
-			"document-id": document.document_id,
+			"document-id": document.id,
 		},
 	)
 
@@ -41,7 +42,6 @@ def create_document(db: Session, document_in: DocumentCreate):
 		name=document_in.name,
 		style=document_in.style,
 		document_path=document_in.document_path,
-		document_id=document_in.document_id,
 	)
 	db.add(document)
 	db.commit()
@@ -63,12 +63,11 @@ def update_document(db: Session, id: int, document_in: DocumentUpdate):
 	if not document:
 		return None
 
-	old_document_id = document.document_id
+	old_document_id = document.id
 
 	document.name = document_in.name
 	document.style = document_in.style
 	document.document_path = document_in.document_path
-	document.document_id = document_in.document_id
 	db.commit()
 	db.refresh(document)
 	_delete_document_from_kb(old_document_id)
@@ -81,7 +80,7 @@ def delete_document(db: Session, id: int):
 	if not document:
 		return None
 
-	_delete_document_from_kb(document.document_id)
+	_delete_document_from_kb(document.id)
 	db.delete(document)
 	db.commit()
 	return document
@@ -92,5 +91,21 @@ def reindex_document(db: Session, id: int):
 	if not document:
 		return None
 
-	_delete_document_from_kb(document.document_id)
+	_delete_document_from_kb(document.id)
 	return _index_document(document)
+
+
+def upload_file(file_content: bytes, filename: str) -> Dict[str, Any]:
+	"""Upload file and return file path."""
+	upload_dir = Path("uploads")
+	upload_dir.mkdir(exist_ok=True)
+	
+	file_path = upload_dir / filename
+	with open(file_path, "wb") as f:
+		f.write(file_content)
+	
+	return {
+		"filename": filename,
+		"file_path": str(file_path),
+		"file_size": len(file_content),
+	}

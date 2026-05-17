@@ -5,6 +5,7 @@ from .document_service import (
     update_document,
     delete_document,
     reindex_document,
+    upload_file,
 )
 from .object_service import (
     create_object,
@@ -33,6 +34,7 @@ __all__ = [
     "update_document",
     "delete_document",
     "reindex_document",
+    "upload_file",
     "create_style",
     "get_style",
     "get_styles",

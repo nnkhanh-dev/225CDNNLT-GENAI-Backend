@@ -28,10 +28,3 @@ class Document(Base):
 		String(1024),
 		nullable=False,
 	)
-
-	document_id: Mapped[str] = mapped_column(
-		String(255),
-		nullable=False,
-		unique=True,
-		index=True,
-	)

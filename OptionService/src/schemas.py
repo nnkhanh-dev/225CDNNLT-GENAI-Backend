@@ -54,3 +54,9 @@ class DocumentRead(DocumentBase):
 class DocumentReindexResponse(BaseModel):
     success: bool
     total_chunks: int
+
+
+class FileUploadResponse(BaseModel):
+    filename: str
+    file_path: str
+    file_size: int
