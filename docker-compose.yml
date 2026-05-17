@@ -16,6 +16,8 @@ services:
   optionservice:
     build:
       context: ./OptionService
+    volumes:
+      - ../UploadedDocuments:/app/uploads
     depends_on:
       - postgres
     networks:
@@ -26,6 +28,9 @@ services:
       context: ./GeneratePromptService
     env_file:
       - ./GeneratePromptService/src/.env
+    volumes:
+      - ../UploadedDocuments:/app/uploads
+      - ../UploadedDocuments:/uploads
     networks:
       - optionnet
     healthcheck:

@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from langchain_community.vectorstores import Chroma
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from docx import Document as DocxDocument
 from pypdf import PdfReader
 
 from models.embedding import get_embeddings
@@ -17,7 +18,8 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parents[2]
 DEFAULT_PERSIST_DIRECTORY = Path(os.getenv("CHROMA_PERSIST_DIRECTORY", BASE_DIR / "chroma_db"))
 COLLECTION_NAME = "generate_prompt_styles"
-SUPPORTED_TEXT_EXTENSIONS = {".txt", ".md", ".markdown", ".rst", ".json", ".csv", ".html", ".htm"}
+SUPPORTED_TEXT_EXTENSIONS = {".txt"}
+SUPPORTED_DOCUMENT_EXTENSIONS = SUPPORTED_TEXT_EXTENSIONS | {".docx"}
 
 
 def normalize_style(style: str) -> str:
@@ -54,9 +56,20 @@ def _read_text_file(path: Path) -> str:
 	return path.read_text(encoding="utf-8")
 
 
+def _read_docx_text(path: Path) -> str:
+	doc = DocxDocument(str(path))
+	parts = [paragraph.text for paragraph in doc.paragraphs]
+	for table in doc.tables:
+		for row in table.rows:
+			parts.extend(cell.text for cell in row.cells)
+	return "\n".join(part for part in parts if part).strip()
+
+
 def _load_file_documents(path: Path, style: str, document_id: str) -> list[Document]:
 	if path.suffix.lower() == ".pdf":
 		text = _read_pdf_text(path)
+	elif path.suffix.lower() == ".docx":
+		text = _read_docx_text(path)
 	else:
 		text = _read_text_file(path)
 
@@ -85,12 +98,12 @@ def load_source_documents(document_path: str, style: str, document_id: str) -> l
 		for file_path in sorted(path.rglob("*")):
 			if not file_path.is_file():
 				continue
-			if file_path.suffix.lower() not in SUPPORTED_TEXT_EXTENSIONS and file_path.suffix.lower() != ".pdf":
+			if file_path.suffix.lower() not in SUPPORTED_DOCUMENT_EXTENSIONS:
 				continue
 			documents.extend(_load_file_documents(file_path, style, document_id))
 		return documents
 
-	if path.suffix.lower() != ".pdf" and path.suffix.lower() not in SUPPORTED_TEXT_EXTENSIONS:
+	if path.suffix.lower() not in SUPPORTED_DOCUMENT_EXTENSIONS:
 		raise ValueError(f"Unsupported document type: {path.suffix}")
 
 	return _load_file_documents(path, style, document_id)

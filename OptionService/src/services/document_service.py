@@ -25,7 +25,7 @@ def _index_document(document: Document) -> Dict[str, Any]:
 		{
 			"style": document.style,
 			"document-path": document.document_path,
-			"document-id": document.id,
+			"document-id": str(document.id),
 		},
 	)
 
@@ -46,7 +46,12 @@ def create_document(db: Session, document_in: DocumentCreate):
 	db.add(document)
 	db.commit()
 	db.refresh(document)
-	_index_document(document)
+	try:
+		_index_document(document)
+	except Exception:
+		db.delete(document)
+		db.commit()
+		raise
 	return document
 
 
@@ -63,15 +68,25 @@ def update_document(db: Session, id: int, document_in: DocumentUpdate):
 	if not document:
 		return None
 
-	old_document_id = document.id
+	old_document_id = str(document.id)
+	old_name = document.name
+	old_style = document.style
+	old_document_path = document.document_path
 
 	document.name = document_in.name
 	document.style = document_in.style
 	document.document_path = document_in.document_path
 	db.commit()
 	db.refresh(document)
-	_delete_document_from_kb(old_document_id)
-	_index_document(document)
+	try:
+		_delete_document_from_kb(old_document_id)
+		_index_document(document)
+	except Exception:
+		document.name = old_name
+		document.style = old_style
+		document.document_path = old_document_path
+		db.commit()
+		raise
 	return document
 
 
@@ -80,7 +95,7 @@ def delete_document(db: Session, id: int):
 	if not document:
 		return None
 
-	_delete_document_from_kb(document.id)
+	_delete_document_from_kb(str(document.id))
 	db.delete(document)
 	db.commit()
 	return document
@@ -91,7 +106,7 @@ def reindex_document(db: Session, id: int):
 	if not document:
 		return None
 
-	_delete_document_from_kb(document.id)
+	_delete_document_from_kb(str(document.id))
 	return _index_document(document)
 
 

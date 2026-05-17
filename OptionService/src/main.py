@@ -176,10 +176,6 @@ def create_document_endpoint(document_in: DocumentCreate, db: Session = Depends(
 	if existing:
 		raise HTTPException(status_code=400, detail="Document with this name already exists")
 
-	existing_document_id = db.query(document_model.Document).filter(document_model.Document.document_id == document_in.document_id).first()
-	if existing_document_id:
-		raise HTTPException(status_code=400, detail="Document with this document_id already exists")
-
 	return create_document(db, document_in)
 
 

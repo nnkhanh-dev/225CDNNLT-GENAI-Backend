@@ -34,7 +34,6 @@ class DocumentBase(BaseModel):
     name: str
     style: str
     document_path: str
-    document_id: str
 
 
 class DocumentCreate(DocumentBase):
