@@ -1,5 +1,5 @@
 import logging
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, UploadFile, File
 from typing import List
 from sqlalchemy.orm import Session
 
@@ -12,13 +12,13 @@ import models.style as style_model
 
 from services import (
 	create_object, get_object, get_objects, update_object, delete_object,
-	create_document, get_document, get_documents, update_document, delete_document, reindex_document,
+	create_document, get_document, get_documents, update_document, delete_document, reindex_document, upload_file,
 	create_style, get_style, get_styles, update_style, delete_style,
 )
 
 from schemas import (
 	ObjectCreate, ObjectRead, StyleCreate, StyleRead,
-	DocumentCreate, DocumentRead, DocumentUpdate, DocumentReindexResponse,
+	DocumentCreate, DocumentRead, DocumentUpdate, DocumentReindexResponse, FileUploadResponse,
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -218,4 +218,16 @@ def reindex_document_endpoint(id: int, db: Session = Depends(get_db)):
 	if not result:
 		raise HTTPException(status_code=404, detail="Not found")
 	return DocumentReindexResponse(success=result.get("success", True), total_chunks=result.get("total_chunks", 0))
+
+
+# ─── File Upload ───
+
+@app.post("/upload", response_model=FileUploadResponse)
+async def upload_file_endpoint(file: UploadFile = File(...)):
+	try:
+		content = await file.read()
+		result = upload_file(content, file.filename)
+		return FileUploadResponse(**result)
+	except Exception as e:
+		raise HTTPException(status_code=500, detail=f"File upload failed: {str(e)}")
 
