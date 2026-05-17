@@ -55,4 +55,11 @@ def generate_prompt(db: Session, id: int) -> Dict[str, str]:
     resp = requests.post(f"{_generate_prompt_service_url()}/generate-prompt", json={"style": style.name}, timeout=30)
     resp.raise_for_status()
     data = resp.json()
+
+    prompt = data.get("prompt")
+    if prompt:
+        style.prompt = prompt
+        db.commit()
+        db.refresh(style)
+
     return data
