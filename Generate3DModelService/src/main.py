@@ -6,7 +6,7 @@ from PIL import Image
 from schemas import GenerateRequest, CustomPromptRequest
 from services.vision_service import validate_object_image
 from services.trellis_service import call_trellis_api
-from services.tripo_service import call_tripo_image_to_3d
+from services.tripo_service import call_tripo_image_to_3d, call_tripo_text_to_3d
 
 app = FastAPI(title="GenAI Nội Thất 3D API")
 
@@ -53,6 +53,33 @@ async def generate_from_image(file: UploadFile = File(...)):
 
         hardcoded_prompt = "A standalone 3D model of this furniture/object. Completely ignore any background or environment. Ensure it is fully generated in full 360 degrees on all sides."
         return call_tripo_image_to_3d(img_bytes, option_prompt=hardcoded_prompt, ext=fmt)
+
+    except Exception as e:
+        return {"success": "false", "error": f"Tripo3D processing error: {str(e)}"}
+
+
+@app.post("/generate_room_from_image")
+async def generate_room_from_image(file: UploadFile = File(...)):
+    """
+    Tạo 3D Model Căn Phòng bằng cách phớt lờ ảnh đầu vào và sử dụng trực tiếp Text-To-3D bằng Tripo3D.
+    Sử dụng một prompt cực kỳ chi tiết miêu tả sa bàn căn phòng trống bọc kín.
+    """
+    try:
+        # Vẫn read file để FastAPI không bị nghẽn Stream, nhưng ta sẽ CHỦ ĐỘNG BỎ QUA nội dung ảnh
+        contents = await file.read()
+
+        # Hardcoded prompt miêu tả cực kỳ chi tiết về 1 căn phòng theo yêu cầu
+        hardcoded_prompt = (
+            "A high-quality 3D architectural diorama of an empty room, viewed from an isometric angle. "
+            "The room has exactly 4 solid walls made of beige painted plaster and a floor made of natural oak wood planks. "
+            "There is strictly NO roof and NO ceiling, leaving the top completely completely open and visible. "
+            "There is absolutely NO furniture, no objects, and no decorations inside. "
+            "One of the walls has a large glass window with a modern grey metal frame. "
+            "Clean topology, photorealistic textures, well-lit from the open top, simple and empty."
+        )
+        
+        # Gọi thẳng hàm text-to-3d của Tripo thay vì image-to-3d
+        return call_tripo_text_to_3d(prompt=hardcoded_prompt)
 
     except Exception as e:
         return {"success": "false", "error": f"Tripo3D processing error: {str(e)}"}
