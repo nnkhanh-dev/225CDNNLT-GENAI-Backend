@@ -8,3 +8,7 @@ uvicorn
 python-dotenv
 python-multipart
 Pillow
+trimesh
+numpy
+scipy
+pyembree

@@ -7,6 +7,7 @@ from schemas import GenerateRequest, CustomPromptRequest
 from services.vision_service import validate_object_image
 from services.trellis_service import call_trellis_api
 from services.tripo_service import call_tripo_image_to_3d, call_tripo_text_to_3d
+from services.room_builder_service import generate_room_with_trimesh
 
 app = FastAPI(title="GenAI Nội Thất 3D API", root_path="/model")
 
@@ -61,28 +62,17 @@ async def generate_from_image(file: UploadFile = File(...)):
 @app.post("/generate_room_from_image")
 async def generate_room_from_image(file: UploadFile = File(...)):
     """
-    Tạo 3D Model Căn Phòng bằng cách phớt lờ ảnh đầu vào và sử dụng trực tiếp Text-To-3D bằng Tripo3D.
-    Sử dụng một prompt cực kỳ chi tiết miêu tả sa bàn căn phòng trống bọc kín.
+    Tạo 3D Model Căn Phòng bằng cách sử dụng luồng phân tích Hình học.
+    - Bước 1: Trích xuất góc, tường, sàn từ ảnh (Mô phỏng OpenCV/MiDaS)
+    - Bước 2: Dùng thư viện Trimesh của Python dựng khối và xuất file GLB trực tiếp.
     """
     try:
-        # Vẫn read file để FastAPI không bị nghẽn Stream, nhưng ta sẽ CHỦ ĐỘNG BỎ QUA nội dung ảnh
         contents = await file.read()
-
-        # Hardcoded prompt miêu tả cực kỳ chi tiết về 1 căn phòng theo yêu cầu
-        hardcoded_prompt = (
-            "A high-quality 3D architectural diorama of an empty room, viewed from an isometric angle. "
-            "The room has exactly 4 solid walls made of beige painted plaster and a floor made of natural oak wood planks. "
-            "There is strictly NO roof and NO ceiling, leaving the top completely completely open and visible. "
-            "There is absolutely NO furniture, no objects, and no decorations inside. "
-            "One of the walls has a large glass window with a modern grey metal frame. "
-            "Clean topology, photorealistic textures, well-lit from the open top, simple and empty."
-        )
-        
-        # Gọi thẳng hàm text-to-3d của Tripo thay vì image-to-3d
-        return call_tripo_text_to_3d(prompt=hardcoded_prompt)
+        # Gọi luồng Trimesh xử lý thay cho Tripo3D
+        return generate_room_with_trimesh(contents)
 
     except Exception as e:
-        return {"success": "false", "error": f"Tripo3D processing error: {str(e)}"}
+        return {"success": "false", "error": f"Room pipeline error: {str(e)}"}
 
 if __name__ == "__main__":
     import uvicorn
